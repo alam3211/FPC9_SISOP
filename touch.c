@@ -3,8 +3,6 @@
 #include "user.h"
 #include "fcntl.h"
 
-char buf[512];
-
 int main(int argc, char *argv[]){
 
   int fd;
@@ -22,4 +20,5 @@ int main(int argc, char *argv[]){
     printf(1,"File sudah ada\n");
   }
 
+  exit();
 }
