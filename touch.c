@@ -5,20 +5,21 @@
 
 int main(int argc, char *argv[]){
 
-  int fd;
+  int fd,i;
   if(argc <= 1){
-    printf(1, "Argument kurang.gunakan touch *namafile*");
+    printf(1, "Usage : touch filename.\n");
     exit();
   }
   
-  if((fd = open(argv[1], O_RDONLY)) < 0) {
-     printf(1,"File tidak ada, file akan dibuat.\n");  
-     fd = open(argv[1],O_CREATE);
+  for(i=1;i<argc;i++){
+  if((fd = open(argv[i], O_RDONLY)) < 0) {
+     printf(1,"File created.\n");  
+     fd = open(argv[i],O_CREATE);
      close(fd);
   }
   else {
-    printf(1,"File sudah ada\n");
+    printf(1,"File exist.\n");
   }
-
+  }
   exit();
 }
