@@ -21,19 +21,19 @@ void cp(char *src, char *dest){
     }
 
   if(stat(dest,&st) == 0 && st.type == T_DIR){
-	printf(1, "cp: %s is a directory.\n",dest);
+	//printf(1, "cp: %s is a directory.\n",dest);
 	strcpy(temp2,dest); strcpy(temp,src);
 	int lnsrc = strlen(src);
 	int lndest = strlen(dest);
 	strcpy(&temp2[lndest],"/");
-	printf(1,"%s\n",temp2);
+	//printf(1,"%s\n",temp2);
 	int n = lnsrc-1;
 	while(n--)
 		if(temp[n] == '/')
 		break;
 	n++;
 	strcpy(&temp2[lndest+1],&temp[n]);
-	printf(1,"%s\n",temp2);
+	//printf(1,"%s\n",temp2);
 	fd1=open(temp2,O_CREATE|O_WRONLY);
   }
 
@@ -99,15 +99,17 @@ void recursive(char *src, char *dest){
 		if(mkdir(dest) < 0){
 			mkdir(buf);
 		}
+
 		while(read(fd, &de, sizeof(de)) == sizeof(de)) {
 		strcpy(temp1,src);
 		strcpy(&temp1[lnsrc],"/");
 		strcpy(&temp1[lnsrc+1],de.name);//path source
-
+printf(1,"src %s\n",temp1 );
 		
 		strcpy(temp2,dest);
 		strcpy(&temp2[lndest],"/");
-		strcpy(&temp1[lndest+1],de.name);//path source
+		strcpy(&temp2[lndest+1],de.name);//path source
+printf(1,"dest %s\n",temp2 );
 		recursive(temp1,temp2);
 		}
 		break;
@@ -116,6 +118,7 @@ void recursive(char *src, char *dest){
 }
 
 int main(int argc,char *argv[]){
+	int i;
   if(argc < 3){
     printf(1, "Usage : cp [opt] src dest\n");
     exit();
@@ -130,6 +133,10 @@ int main(int argc,char *argv[]){
 	recursive(argv[2],argv[3]);
 	exit();
   }
-  cp(argv[1],argv[2]);
+
+  for(i=1; i<argc-1; i++){
+		cp(argv[i],argv[argc-1]);       
+		//printf(1,"ngeeng\n"); 
+	}
   exit();
 }

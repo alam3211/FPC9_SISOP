@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
 		strcpy(&buf[lndest],"/");
 		strcpy(&buf[lndest+1],argv[i]);
 		move(argv[i],buf);       
-		printf(1,"ngeeng\n"); 
+		//printf(1,"ngeeng\n"); 
 	}
 	exit();
 }
