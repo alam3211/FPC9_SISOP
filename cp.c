@@ -9,7 +9,7 @@ void cp(char *src, char *dest){
   char buf[512];
   char temp[512];
   char temp2[512];
-  struct stat sb;
+  struct stat st;
   if(dest[strlen(dest)-1]=='/')
 	dest[strlen(dest)-1]=0;
 
@@ -20,7 +20,7 @@ void cp(char *src, char *dest){
       exit();
     }
 
-  if(stat(dest,&sb) == 0 && sb.type == T_DIR){
+  if(stat(dest,&st) == 0 && st.type == T_DIR){
 	printf(1, "cp: %s is a directory.\n",dest);
 	strcpy(temp2,dest); strcpy(temp,src);
 	int lnsrc = strlen(src);
@@ -47,12 +47,11 @@ void cp(char *src, char *dest){
 void aster(char* path){
 	int cek,fd;
 	char buf[512],*p;
-	struct stat sb;
+	struct stat st;
 	struct dirent de;
-
-	cek= stat(path, &sb);
-	if(cek == 0 && sb.type != T_DIR){
-		printf(1,"cp : dest is not a directory.\n");
+	cek= stat(path, &st);
+	if(cek == 0 && st.type != T_DIR){
+		printf(1,"cp * : dest is not a directory.\n");
 		exit();
 	}
 	fd=open(".",O_RDONLY);
@@ -64,12 +63,56 @@ void aster(char* path){
       	
 	memmove(p, de.name, DIRSIZ);
       	p[DIRSIZ] = 0;
- 	if(stat(buf, &sb) < 0){
+ 	if(stat(buf, &st) < 0){
         	printf(1, "cp: cannot stat %s\n", buf);
         	continue;
         }
         cp(buf,path);
 	}
+}
+
+void recursive(char *src, char *dest){
+	int  fd,cek;
+	char buf[512],temp1[512],temp2[512];
+	int lnsrc = strlen(src);
+	int lndest = strlen(dest);
+
+	struct stat st;
+	struct dirent de;
+	
+	fd= open(src,O_RDONLY);
+	cek= fstat(fd,&st);
+	if(cek == 0 && st.type != T_DIR){
+		printf(1,"cp -r : src is not a directory.\n");
+		exit();
+	}
+	strcpy(buf,dest);
+	strcpy(&buf[lndest],"/");
+	strcpy(&buf[lndest+1],src);
+	
+	switch(st.type) {
+	case T_FILE:
+		cp(src,dest);
+		break;
+
+	case T_DIR:
+		if(mkdir(dest) < 0){
+			mkdir(buf);
+		}
+		while(read(fd, &de, sizeof(de)) == sizeof(de)) {
+		strcpy(temp1,src);
+		strcpy(&temp1[lnsrc],"/");
+		strcpy(&temp1[lnsrc+1],de.name);//path source
+
+		
+		strcpy(temp2,dest);
+		strcpy(&temp2[lndest],"/");
+		strcpy(&temp1[lndest+1],de.name);//path source
+		recursive(temp1,temp2);
+		}
+		break;
+	}
+	close(fd);
 }
 
 int main(int argc,char *argv[]){
@@ -81,8 +124,12 @@ int main(int argc,char *argv[]){
   if(strcmp(argv[1], "*") == 0){
 	aster(argv[2]);
 	exit();
-  } 
-
+  }
+  
+  if(strcmp(argv[1], "-r") == 0){
+	recursive(argv[2],argv[3]);
+	exit();
+  }
   cp(argv[1],argv[2]);
   exit();
 }
