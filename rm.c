@@ -9,26 +9,21 @@ void rmforcerecursive(char *path){
 
   char buf[512], *p;
   int fd;
-
   struct dirent de;
   struct stat st;
 
-  if((fd = open(path, O_RDONLY)) < 0){              //membuka path
-    printf(2, "%s tidak ada\n", path);              
-    return;
-  }
 
-  if(fstat(fd, &st) < 0){                           //memgambil stat dari file
-    printf(2, "ls: cannot stat %s\n", path);        
+  if(fstat(fd = open(path, O_RDONLY), &st) < 0){   //membuka dan mengambil stat file
+    //printf(2, "%s tidak ada\n", path);        
     close(fd);
     return;
   }
 
   switch(st.type){
   case T_FILE:                                      //jika st.type adalah file
-    if(unlink(buf) < 0)
-      printf(1, "rm: %s failed to delete\n", buf); 
-    else printf(1,"file %s dihapus\n", buf); 
+    if(unlink(path) < 0)
+      //printf(1, "rm: %s failed to delete\n", buf); 
+    //else printf(1,"file %s dihapus\n", buf); 
     break;
 
   case T_DIR:                                       //jika st.type adalah direktori
@@ -39,28 +34,34 @@ void rmforcerecursive(char *path){
     p++;
 
     while(read(fd, &de, sizeof(de)) == sizeof(de)){
-      if(de.inum == 0||strcmp(de.name, ".")==0||strcmp(de.name,"..")==0)continue;
 
-      memmove(p, de.name, strlen(de.name));
-      p[strlen(de.name)] = 0;
+      //printf(1, "dirent de.name: %s\nde size %d\n", de.name, sizeof(de));
+      if(de.inum==0||strcmp(de.name, ".")==0||strcmp(de.name,"..")==0)continue;
 
-      if(fstat(open(buf, O_RDONLY), &st)<0) printf(1,"%s tidak ada\n", buf);
+      memmove(p, de.name, DIRSIZ);
+      p[DIRSIZ] = 0;
+
+      if(stat(buf, &st)<0){
+        //printf(1,"%s tidak ada\n", buf);
+        continue;
+      } 
+
       //ini diotak atik
       //menampilkan isi direktori dan menghapus isinya
-      printf(1, "ini folder=%s buf=%s\n", path, buf);
-
+      //printf(1, "ini folder=%s buf=%s\n", path, buf);
       if(st.type==T_DIR) rmforcerecursive(buf);
-      else{
+      else unlink(buf);
+      /*{
         if(unlink(buf) < 0)
           printf(1, "rm: %s failed to delete\n", buf); 
         else printf(1,"file %s dihapus\n", buf);
-      }   
+      }*/   
     }
     //ini juga
     //menghapus direktori kosong
-    if(unlink(path) < 0)
-      printf(1, "rm: %s failed to delete\n", path);
-    else printf(1,"direktori %s dihapus\n", path);
+    if(unlink(path) < 0) return;
+      //printf(1, "rm: %s failed to delete\n", path);
+    //else printf(1,"direktori %s dihapus\n", path);
 
     break;
   }
@@ -77,7 +78,7 @@ int main(int argc, char *argv[])
 
   if(strcmp(argv[1],"-rf")==0){
     for(i = 2; i < argc; i++){
-      printf(2,"rm -rf dijalankan\n");
+      //printf(2,"rm -rf dijalankan\n");
       rmforcerecursive(argv[i]);
     }
     exit();
@@ -90,7 +91,7 @@ int main(int argc, char *argv[])
 
   for(i = 1; i < argc; i++){
     if(unlink(argv[i]) < 0){
-      printf(2, "rm: %s failed to delete\n", argv[i]);
+      //printf(2, "rm: %s failed to delete\n", argv[i]);
       break;
     }
   }
